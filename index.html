@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>로또 6/45</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="로또">
+    <meta name="application-name" content="로또">
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        body { font-family: "Pretendard", sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; margin: 0; }
+        .container { background: #fff; padding: 30px 24px; border-radius: 24px; box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07); max-width: 440px; width: 100%; box-sizing: border-box; }
+        h1 { text-align: center; color: #1a1a1a; margin-top: 0; font-weight: 800; font-size: 26px; letter-spacing: -0.5px; }
+        .header-line { width: 44px; height: 4px; background: #007aff; margin: 0 auto 20px; border-radius: 2px; }
+        .status { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; font-weight: 500; background: #f0f4f8; padding: 8px; border-radius: 8px;}
+        .btn-group { display: flex; justify-content: space-between; margin-bottom: 20px; background: #f1f3f5; border-radius: 12px; padding: 5px; }
+        .btn-group button { flex: 1; border: none; background: transparent; padding: 11px 0; font-size: 14px; font-weight: 600; color: #868e96; border-radius: 9px; cursor: pointer; transition: all 0.25s ease; }
+        .btn-group button.active { background: #fff; color: #212529; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-weight: 700; }
+        .filters { margin-bottom: 24px; display: flex; flex-direction: column; gap: 11px; background: #fafbfc; padding: 14px; border-radius: 12px; border: 1px solid #edf2f7; }
+        .filter-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: #4a5568; cursor: pointer; }
+        .filter-item input[type="checkbox"] { accent-color: #007aff; width: 18px; height: 18px; cursor: pointer; }
+        .results { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+        .row { display: flex; justify-content: space-between; padding: 12px 14px; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .ball { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); box-shadow: inset -2px -4px 6px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1); }
+        .c1 { background: linear-gradient(135deg, #fbc400, #e5b200); }
+        .c2 { background: linear-gradient(135deg, #69c8f2, #3ba9d8); }
+        .c3 { background: linear-gradient(135deg, #ff7272, #e54d4d); }
+        .c4 { background: linear-gradient(135deg, #aaaaaa, #888888); }
+        .c5 { background: linear-gradient(135deg, #b0d840, #93b82d); }
+        .empty { background: #edf2f7; color: transparent; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .actions { display: flex; gap: 10px; }
+        .actions button { flex: 1; padding: 15px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.25s; color: white; }
+        .btn-gen { background: linear-gradient(135deg, #007aff, #0056b3); box-shadow: 0 4px 15px rgba(0,122,255,0.3); }
+        .btn-gen:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,122,255,0.4); }
+        .btn-reset { background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #475569 !important; }
+        .btn-reset:hover { background: linear-gradient(135deg, #cbd5e1, #94a3b8); }
+
+        .lotto-result-wrapper { text-align: center; font-family: 'Noto Sans KR', sans-serif; padding: 22px 12px; background-color: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; margin-bottom: 20px; }
+        .draw-header { display: flex; justify-content: center; align-items: center; margin-bottom: 4px; }
+        .draw-title { font-size: 22px; font-weight: 800; margin: 0; color: #1e293b; }
+        .draw-title span { color: #0284c7; }
+        .draw-date { color: #64748b; font-size: 13px; margin-bottom: 18px; }
+        .numbers-display { display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 4px; margin-bottom: 12px; width: 100%; white-space: nowrap; }
+        .winning-numbers { display: flex; flex-wrap: nowrap; gap: 4px; justify-content: center; }
+        .bonus-number { display: flex; flex-wrap: nowrap; justify-content: center; }
+        .lotto-ball { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; box-shadow: inset -2px -2px 5px rgba(0,0,0,0.2); flex-shrink: 0; }
+        .plus-sign { font-size: 16px; color: #bbb; font-weight: 300; margin: 0 2px; flex-shrink: 0; }
+        .labels-row { display: flex; justify-content: space-around; max-width: 320px; margin: 0 auto; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 12px; }
+        .ball-yellow { background-color: #f2b720; }
+        .ball-blue { background-color: #0077c8; }
+        .ball-red { background-color: #de3b59; }
+        .ball-gray { background-color: #6c7684; }
+        .ball-green { background-color: #27a561; }
+
+        label, .checkbox-label, .options-container {
+            white-space: nowrap;
+            word-break: keep-all;
+            letter-spacing: -0.3px;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 12px 10px; }
+            .container { padding: 22px 16px; border-radius: 20px; }
+            h1 { font-size: 22px; }
+            .ball { width: 34px !important; height: 34px !important; font-size: 15px !important; }
+            .row { padding: 10px 8px !important; }
+            .lotto-ball { width: 28px !important; height: 28px !important; font-size: 12px !important; }
+            .plus-sign { margin: 0 2px !important; font-size: 14px !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lotto 6/45</h1>
+        <div class="header-line"></div>
+        <div class="status" id="statusMsg" style="display:none;"></div>
+
+        <div style="text-align: center; margin-bottom: 16px;">
+            <span style="background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; display: inline-block; white-space: nowrap; letter-spacing: -0.5px;">
+                ✅ 최신 회차 연동 완료 (<span id="sync-draw-no">----</span>회 기준)
+            </span>
+        </div>
+
+        <div class="lotto-result-wrapper">
+            <div class="draw-header">
+                <h2 class="draw-title">제 <span id="latest-draw-no">----</span>회 추첨 결과</h2>
+            </div>
+            <p class="draw-date" id="latest-draw-date">업데이트 중...</p>
+            <div class="numbers-display">
+                <div class="winning-numbers" id="winning-numbers"></div>
+                <div class="plus-sign">+</div>
+                <div class="bonus-number" id="bonus-number"></div>
+            </div>
+            <div class="labels-row">
+                <span class="label-winning">당첨번호</span>
+                <span class="label-bonus">보너스번호</span>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="setGames(1)" id="btn-1">1게임</button>
+            <button onclick="setGames(2)" id="btn-2">2게임</button>
+            <button onclick="setGames(3)" id="btn-3">3게임</button>
+            <button onclick="setGames(4)" id="btn-4">4게임</button>
+            <button onclick="setGames(5)" id="btn-5" class="active">5게임</button>
+        </div>
+
+        <div class="filters">
+            <label class="filter-item">
+                <input type="checkbox" id="filterHistory" checked> 🚫 역대 1등 당첨 조합 완벽 제외
+            </label>
+            <label class="filter-item">
+                <input type="checkbox" id="filterSum" checked> 🧮 당첨 번호 총합 120~180 유지
+            </label>
+            <label class="filter-item">
+                <input type="checkbox" id="filterCold" checked> ❄️ 최근 15주 미출현 번호 1개 포함
+            </label>
+        </div>
+
+        <div class="results" id="resultArea"></div>
+
+        <div class="actions">
+            <button class="btn-reset" onclick="resetLotto()">초기화</button>
+            <button class="btn-gen" onclick="generateLotto()">✨ 번호 생성 ✨</button>
+        </div>
+    </div>
+
+    <script>
+        let lottoData = null;
+        let pastCombinations = new Set();
+        let coldNumbers = [];
+        let gameCount = 5;
+
+        // PWA Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .catch((err) => console.log('SW reg error:', err));
+            });
+        }
+
+        async function loadData() {
+            try {
+                let res;
+                try {
+                    res = await fetch("/api/lotto-data");
+                    if (!res.ok) throw new Error("API not ok");
+                } catch {
+                    res = await fetch("/lotto_data.json?v=" + Date.now());
+                }
+                if (!res.ok) throw new Error("No data");
+                lottoData = await res.json();
+                processStats();
+                
+                const drawNos = Object.keys(lottoData).map(Number);
+                const maxDraw = Math.max(...drawNos);
+                
+                const syncEl = document.getElementById("sync-draw-no");
+                if (syncEl) syncEl.textContent = maxDraw;
+                const latestEl = document.getElementById("latest-draw-no");
+                if (latestEl) latestEl.textContent = maxDraw;
+                const dateEl = document.getElementById("latest-draw-date");
+                if (dateEl) dateEl.textContent = "최신 당첨 결과";
+                
+                const latestNumbers = lottoData[maxDraw.toString()];
+                if (latestNumbers) {
+                    const winningContainer = document.getElementById("winning-numbers");
+                    const bonusContainer = document.getElementById("bonus-number");
+                    if (winningContainer && bonusContainer) {
+                        winningContainer.innerHTML = "";
+                        bonusContainer.innerHTML = "";
+                        
+                        const mainNums = latestNumbers.slice(0, 6);
+                        const bonusNum = latestNumbers[6];
+                        
+                        mainNums.forEach(n => {
+                            const ball = document.createElement("div");
+                            ball.className = `lotto-ball ${getBallColorClass(n)}`;
+                            ball.textContent = n;
+                            winningContainer.appendChild(ball);
+                        });
+                        
+                        const bBall = document.createElement("div");
+                        bBall.className = `lotto-ball ${getBallColorClass(bonusNum)}`;
+                        bBall.textContent = bonusNum;
+                        bonusContainer.appendChild(bBall);
+                    }
+                }
+            } catch(e) {
+                console.error("데이터 로드 실패:", e);
+                const status = document.getElementById("statusMsg");
+                if (status) {
+                    status.style.display = "block";
+                    status.style.background = "#fff5f5";
+                    status.style.color = "#c53030";
+                    status.innerText = "데이터를 불러오지 못했습니다. 기본 랜덤 알고리즘으로 동작합니다.";
+                }
+            }
+        }
+
+        function processStats() {
+            if(!lottoData) return;
+            pastCombinations.clear();
+            const appearances = {};
+            for(let i=1; i<=45; i++) appearances[i] = 0;
+
+            const drawNos = Object.keys(lottoData).map(Number).sort((a,b)=>a-b);
+            const totalDraws = drawNos.length;
+
+            drawNos.forEach(drw => {
+                const nums = lottoData[drw].slice(0, 6).sort((a,b)=>a-b);
+                pastCombinations.add(nums.join(","));
+            });
+
+            const recentDraws = drawNos.slice(-15);
+            recentDraws.forEach(drw => {
+                lottoData[drw].slice(0, 6).forEach(n => appearances[n]++);
+            });
+
+            coldNumbers = [];
+            for(let i=1; i<=45; i++) {
+                if(appearances[i] === 0) coldNumbers.push(i);
+            }
+        }
+
+        function setGames(n) {
+            gameCount = n;
+            for(let i=1; i<=5; i++) {
+                const btn = document.getElementById("btn-"+i);
+                if (btn) {
+                    if(i === n) btn.classList.add("active");
+                    else btn.classList.remove("active");
+                }
+            }
+            generateLotto();
+        }
+
+        function getColor(n) {
+            if(n <= 10) return "c1";
+            if(n <= 20) return "c2";
+            if(n <= 30) return "c3";
+            if(n <= 40) return "c4";
+            return "c5";
+        }
+
+        function generateGame() {
+            const fHistory = document.getElementById("filterHistory").checked;
+            const fSum = document.getElementById("filterSum").checked;
+            const fCold = document.getElementById("filterCold").checked;
+
+            let attempts = 0;
+            while(attempts < 5000) {
+                attempts++;
+                let current = [];
+                if(fCold && coldNumbers.length > 0) {
+                    const rCold = coldNumbers[Math.floor(Math.random() * coldNumbers.length)];
+                    current.push(rCold);
+                }
+
+                while(current.length < 6) {
+                    let r = Math.floor(Math.random() * 45) + 1;
+                    if(!current.includes(r)) current.push(r);
+                }
+                current.sort((a,b)=>a-b);
+
+                if(fSum) {
+                    const sum = current.reduce((a,b)=>a+b, 0);
+                    if(sum < 120 || sum > 180) continue;
+                }
+
+                if(fHistory && lottoData) {
+                    if(pastCombinations.has(current.join(","))) continue;
+                }
+
+                return current;
+            }
+
+            let backup = [];
+            while(backup.length<6) {
+                let r = Math.floor(Math.random()*45)+1;
+                if(!backup.includes(r)) backup.push(r);
+            }
+            return backup.sort((a,b)=>a-b);
+        }
+
+        function generateLotto() {
+            const resultArea = document.getElementById("resultArea");
+            if (!resultArea) return;
+            resultArea.innerHTML = "";
+            for (let i = 0; i < gameCount; i++) {
+                const nums = generateGame();
+                let html = "<div class=\"row\">";
+                nums.forEach(n => {
+                    html += "<div class=\"ball " + getColor(n) + "\">" + n + "</div>";
+                });
+                html += "</div>";
+                resultArea.innerHTML += html;
+            }
+        }
+
+        function resetLotto() {
+            const resultArea = document.getElementById("resultArea");
+            if (!resultArea) return;
+            resultArea.innerHTML = "";
+            for (let i = 0; i < gameCount; i++) {
+                resultArea.innerHTML += "<div class=\"row\"><div class=\"ball empty\"></div><div class=\"ball empty\"></div><div class=\"ball empty\"></div><div class=\"ball empty\"></div><div class=\"ball empty\"></div><div class=\"ball empty\"></div></div>";
+            }
+        }
+
+        window.onload = () => {
+            resetLotto();
+            loadData();
+        };
+
+        function getBallColorClass(num) {
+            if (num <= 10) return 'ball-yellow';
+            if (num <= 20) return 'ball-blue';
+            if (num <= 30) return 'ball-red';
+            if (num <= 40) return 'ball-gray';
+            return 'ball-green';
+        }
+    </script>
+</body>
+</html>
